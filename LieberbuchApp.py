@@ -54,21 +54,28 @@ def format_chordpro_for_pdf(parsed_content):
 
 def export_to_pdf():
     parsed_content = parse_chordpro(text_area.get('1.0', tk.END))
-    formatted_content = format_chordpro_for_pdf(parsed_content)
 
     pdf_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
     if pdf_path:
         c = canvas.Canvas(pdf_path, pagesize=letter)
-        textobject = c.beginText(40, 750)
-        textobject.setFont("Courier", 12)
+        y_position = 750  # Startposition auf der Seite
+        for chords, text in parsed_content:
+            chord_line, text_line = format_line_for_display(chords, text)
+            
+            # Positioniere und zeichne die Akkordzeile
+            textobject = c.beginText(40, y_position)
+            textobject.setFont("Courier", 12)
+            textobject.textOut(chord_line)
+            c.drawText(textobject)
 
-        for chord_line, text_line in formatted_content:
-            textobject.textLine(chord_line)
-            textobject.moveCursor(0, -15)
-            textobject.textLine(text_line)
-            textobject.moveCursor(0, -15)
+            # Positioniere und zeichne die Textzeile
+            textobject = c.beginText(40, y_position - 15)
+            textobject.setFont("Courier", 12)
+            textobject.textOut(text_line)
+            c.drawText(textobject)
 
-        c.drawText(textobject)
+            y_position -= 30  # Abstand für die nächste Zeile
+
         c.save()
 
 def parse_and_display_chordpro():

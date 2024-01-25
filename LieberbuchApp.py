@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import filedialog, scrolledtext, Toplevel, PanedWindow
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from itertools import zip_longest
 import re  # Importieren Sie das re-Modul für reguläre Ausdrücke
+
 
 def load_chordpro_file():
     global file_path
@@ -19,36 +19,30 @@ def save_chordpro_file():
             file.write(text_area.get('1.0', tk.END))
 
 def parse_chordpro(file_content):
-    lines = file_content.split('\n')
     parsed_lines = []
-
-    for line in lines:
-        if '[' in line and ']' in line:  # Akkorde in dieser Zeile
-            text_parts = []
-            chord_parts = []
-            current_chord = ''
-            current_text = ''
-            in_chord = False
-            for char in line:
-                if char == '[':
-                    in_chord = True
-                    text_parts.append(current_text)
-                    current_text = ''
-                elif char == ']':
-                    in_chord = False
-                    chord_parts.append(current_chord)
-                    current_chord = ''
-                elif in_chord:
-                    current_chord += char
-                else:
-                    current_text += char
-            text_parts.append(current_text)  # Füge den letzten Textteil hinzu
-
-            parsed_lines.append((chord_parts, text_parts))
-        else:
-            parsed_lines.append(([], [line]))  # Nur Textzeile
-
+    for line in file_content.split('\n'):
+        chord_positions = []
+        text_line = ""
+        pos = 0
+        while line:
+            if line.startswith('['):
+                line = line[1:]
+                chord = line[:line.index(']')]
+                line = line[line.index(']')+1:]
+                chord_positions.append((chord, pos))
+            else:
+                text_line += line[0]
+                pos += 1
+                line = line[1:]
+        parsed_lines.append((chord_positions, text_line))
     return parsed_lines
+
+def format_line_for_display(chords, text):
+    display_line = [" "] * (len(text) + max((pos for _, pos in chords), default=0))
+    for chord, pos in chords:
+        display_line[pos:pos+len(chord)] = chord
+    return ''.join(display_line), text
+
 
 def format_chordpro_for_pdf(parsed_content):
     formatted_lines = []
@@ -95,16 +89,10 @@ def parse_and_display_chordpro():
         formatted_text_area.insert(tk.END, chord_line + '\n' + text_line + '\n\n')
 
 def update_preview():
-    raw_content = text_area.get('1.0', tk.END)
-    parsed_content = parse_chordpro(raw_content)
-    formatted_content = format_chordpro_for_pdf(parsed_content)
-
-    # Leere die Vorschau und füge den formatierten Inhalt hinzu
+    parsed_content = parse_chordpro(text_area.get('1.0', tk.END))
     preview_area.delete('1.0', tk.END)
-    for chord_line, text_line in formatted_content:
-        # Wenn die Zeile Daten in geschwungenen Klammern enthält, überspringe sie
-        if re.search(r'\{.*?\}', chord_line) or re.search(r'\{.*?\}', text_line):
-            continue
+    for chords, text in parsed_content:
+        chord_line, text_line = format_line_for_display(chords, text)
         preview_area.insert(tk.END, chord_line + '\n' + text_line + '\n\n')
         
 def create_start_screen():

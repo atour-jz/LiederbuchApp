@@ -2,8 +2,10 @@ from tkinter import Tk, filedialog, scrolledtext, messagebox
 import tkinter
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from chordpro_parser import extract_and_format_title, extract_ccli_info, extract_footer_info, extract_key, format_line_for_display, parse_chordpro, extract_artist
+from chordpro_parser import extract_and_format_title, extract_ccli_info, extract_footer_info, extract_key, extract_tempo, format_line_for_display, parse_chordpro, extract_artist
 from chordpro_parser import extract_ccli_info
+from chordpro_parser import extract_tempo
+
 
 def extract_info(file_content):
     # Extrahieren Sie die erforderlichen Informationen aus dem ChordPro-Text
@@ -12,6 +14,7 @@ def extract_info(file_content):
     key = extract_key(file_content)
     ccli_license, ccli = extract_ccli_info(file_content)
     copyright, footer = extract_footer_info(file_content)
+    tempo = extract_tempo(file_content)
     return title, artist, key, ccli_license, ccli, copyright, footer
 
 def export_to_pdf(text_area):
@@ -41,14 +44,19 @@ def export_to_pdf(text_area):
         y_position -= 30
 
     if artist:
-        c.setFont("Helvetica-Oblique", 12)
+        c.setFont("Helvetica-Oblique", 10)
         c.drawString(x_position, y_position, artist)
-        y_position -= 20
+        y_position -= 25
 
     if key:
         c.setFont("Helvetica", 12)
         c.drawString(right_align_x_position, letter[0] - 40, f"Key: {key}")
 
+    #if tempo:
+     #   c.setFont("Helvetica", 12)
+      #  c.drawString(x_position, y_position, tempo)
+       # y_position -= 20
+        
     # Setze die Seitenfußzeilen
     footer_height = 20
     c.setFont("Helvetica", 9)
@@ -73,7 +81,7 @@ def export_to_pdf(text_area):
         chord_line, text_line = format_line_for_display(chords, text)
 
         textobject = c.beginText(x_position, y_position)
-        textobject.setFont("Courier", 12)
+        textobject.setFont("Courier", 11)
         textobject.textOut(chord_line)
         c.drawText(textobject)
 

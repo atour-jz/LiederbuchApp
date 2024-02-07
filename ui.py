@@ -2,23 +2,22 @@ import tkinter as tk
 from tkinter import PanedWindow, filedialog, scrolledtext, messagebox
 from chordpro_parser import parse_chordpro, format_line_for_display, extract_and_format_title
 from pdf_exporter import export_to_pdf
+from word_operations import add_landscape_page_to_word
 
 def create_start_screen():
-    # Aufbau der Benutzeroberfläche
     global text_area, preview_area
 
     window = tk.Tk()
     window.title("ChordPro Editor")
 
-    # Erstellen eines PanedWindow für den Split-Screen-Effekt
     p_window = PanedWindow(window, orient=tk.HORIZONTAL)
     p_window.pack(fill=tk.BOTH, expand=True)
 
-    # Linker Bereich: Textfeld und Buttons
     left_panel = tk.Frame(p_window)
     button_frame = tk.Frame(left_panel)
     button_frame.pack(pady=10)
 
+    # Bestehende Buttons
     load_button = tk.Button(button_frame, text="ChordPro-Datei laden", command=lambda: load_chordpro_file())
     load_button.pack(side=tk.LEFT, padx=5)
 
@@ -31,13 +30,16 @@ def create_start_screen():
     display_button = tk.Button(button_frame, text="ChordPro formatieren", command=lambda: update_preview())
     display_button.pack(side=tk.LEFT, padx=5)
 
+    # Neuer Button für das Hinzufügen einer Seite im Querformat zu einem Word-Dokument
+    add_page_button = tk.Button(button_frame, text="Seite zu Word", command=lambda: add_page_to_word())
+    add_page_button.pack(side=tk.LEFT, padx=5)
+
     text_area = scrolledtext.ScrolledText(left_panel, wrap=tk.WORD, height=15, width=50)
     text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
     text_area['font'] = ('consolas', '12')
 
     p_window.add(left_panel)
 
-    # Rechter Bereich: Vorschau
     right_panel = tk.Frame(p_window)
     preview_area = scrolledtext.ScrolledText(right_panel, wrap=tk.WORD, height=15, width=50)
     preview_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
@@ -46,6 +48,13 @@ def create_start_screen():
     p_window.add(right_panel)
 
     window.mainloop()
+
+def add_page_to_word():
+    file_path = filedialog.askopenfilename(filetypes=[("Word documents", "*.docx")])
+    if file_path:
+        add_landscape_page_to_word(file_path)
+        messagebox.showinfo("Erfolg", "Eine Seite im Querformat wurde hinzugefügt.")
+
 
 def load_chordpro_file():
     global file_path

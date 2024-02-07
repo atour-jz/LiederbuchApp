@@ -42,6 +42,10 @@ def extract_key(file_content):
     match = re.search(r'\{key:\s*(.*?)\}', file_content)
     return match.group(1) if match else None
 
+def extract_tempo(file_content):
+    match = re.search(r'\{tempo:\s*(.*?)\}', file_content)
+    return match.group(1) if match else None
+
 def extract_ccli_info(file_content):
     ccli_license_match = re.search(r'\{ccli_license:\s*(.*?)\}', file_content)
     ccli_match = re.search(r'\{ccli:\s*(.*?)\}', file_content)
